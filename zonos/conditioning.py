@@ -345,7 +345,7 @@ def make_cond_dict(
     language_code_to_id = {lang: i for i, lang in enumerate(supported_language_codes)}
 
     if speaker is None:
-        speaker = (3.0 * torch.randn((1, 1, speaker_dim), device=device)).unsqueeze(0).to(torch.bfloat16)
+        speaker = (3.0 * torch.randn((1, 1, speaker_dim), device=device)).unsqueeze(0).to(torch.float16)
 
     if emotion is None:
         emotion = torch.tensor(

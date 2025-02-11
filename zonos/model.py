@@ -49,7 +49,7 @@ class Zonos(nn.Module):
     @classmethod
     def from_local(cls, config_path: str, model_path: str, device: str = "cuda") -> "Zonos":
         config = ZonosConfig.from_dict(json.load(open(config_path)))
-        model = cls(config).to(device, torch.bfloat16)
+        model = cls(config).to(device, torch.float16)
         model.autoencoder.dac.to(device)
 
         sd = model.state_dict()
@@ -65,7 +65,7 @@ class Zonos(nn.Module):
         if self.spk_clone_model is None:
             self.spk_clone_model = SpeakerEmbeddingLDA()
         _, spk_embedding = self.spk_clone_model(wav.to(self.spk_clone_model.device), sr)
-        return spk_embedding.unsqueeze(0).bfloat16()
+        return spk_embedding.unsqueeze(0).float16()
 
     def embed_codes(self, codes: torch.Tensor) -> torch.Tensor:
         return sum(emb(codes[:, i]) for i, emb in enumerate(self.embeddings))
@@ -161,7 +161,7 @@ class Zonos(nn.Module):
         hidden_states = torch.cat([prefix_hidden_states, self.embed_codes(input_ids)], dim=1)
         return self._compute_logits(hidden_states, inference_params, cfg_scale)
 
-    def setup_cache(self, batch_size: int, max_seqlen: int, dtype: torch.dtype = torch.bfloat16) -> InferenceParams:
+    def setup_cache(self, batch_size: int, max_seqlen: int, dtype: torch.dtype = torch.float16) -> InferenceParams:
         key_value_memory_dict = {
             i: layer.allocate_inference_cache(batch_size, max_seqlen, dtype=dtype)
             for i, layer in enumerate(self.backbone.layers)
